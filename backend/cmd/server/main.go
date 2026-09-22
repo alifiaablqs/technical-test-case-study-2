@@ -31,17 +31,20 @@ func main() {
 	// Repositories
 	materialRepo := repository.NewMaterialRepository(db)
 	productRepo := repository.NewProductRepository(db)
+	bomRepo := repository.NewBOMRepository(db)
 
 	// Services
 	materialSvc := service.NewMaterialService(materialRepo)
 	productSvc := service.NewProductService(productRepo)
+	bomSvc := service.NewBOMService(bomRepo, productRepo, materialRepo)
 
 	// Handlers
 	materialHdl := handler.NewMaterialHandler(materialSvc)
 	productHdl := handler.NewProductHandler(productSvc)
+	bomHdl := handler.NewBOMHandler(bomSvc)
 
 	// Router
-	r := handler.NewRouter(materialHdl, productHdl)
+	r := handler.NewRouter(materialHdl, productHdl, bomHdl)
 
 	addr := ":" + cfg.ServerPort
 	log.Printf("Starting backend server on %s ...", addr)

@@ -4,7 +4,7 @@ import (
 	"net/http"
 )
 
-func NewRouter(materialHandler *MaterialHandler, productHandler *ProductHandler) http.Handler {
+func NewRouter(materialHandler *MaterialHandler, productHandler *ProductHandler, bomHandler *BOMHandler) http.Handler {
 	mux := http.NewServeMux()
 
 	// Material routes
@@ -20,6 +20,10 @@ func NewRouter(materialHandler *MaterialHandler, productHandler *ProductHandler)
 	mux.HandleFunc("GET /api/products/{id}", productHandler.GetByID)
 	mux.HandleFunc("PUT /api/products/{id}", productHandler.Update)
 	mux.HandleFunc("DELETE /api/products/{id}", productHandler.Delete)
+
+	// BOM routes
+	mux.HandleFunc("POST /api/boms", bomHandler.Create)
+	mux.HandleFunc("GET /api/products/{id}/bom", bomHandler.GetActiveByProductID)
 
 	return mux
 }
