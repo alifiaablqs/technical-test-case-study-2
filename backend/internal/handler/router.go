@@ -4,7 +4,7 @@ import (
 	"net/http"
 )
 
-func NewRouter(materialHandler *MaterialHandler, productHandler *ProductHandler, bomHandler *BOMHandler) http.Handler {
+func NewRouter(materialHandler *MaterialHandler, productHandler *ProductHandler, bomHandler *BOMHandler, workOrderHandler *WorkOrderHandler) http.Handler {
 	mux := http.NewServeMux()
 
 	// Material routes
@@ -24,6 +24,11 @@ func NewRouter(materialHandler *MaterialHandler, productHandler *ProductHandler,
 	// BOM routes
 	mux.HandleFunc("POST /api/boms", bomHandler.Create)
 	mux.HandleFunc("GET /api/products/{id}/bom", bomHandler.GetActiveByProductID)
+
+	// Work Order routes
+	mux.HandleFunc("POST /api/work-orders", workOrderHandler.Create)
+	mux.HandleFunc("GET /api/work-orders/{id}", workOrderHandler.GetByID)
+	mux.HandleFunc("POST /api/work-orders/{id}/complete", workOrderHandler.Complete)
 
 	return mux
 }

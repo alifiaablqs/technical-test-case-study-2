@@ -1,4 +1,4 @@
--- Database Schema for Materials, Products, and Bill of Materials (BOM)
+-- Database Schema for Materials, Products, Bill of Materials (BOM), and Work Orders
 
 CREATE TABLE IF NOT EXISTS materials (
     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
@@ -40,7 +40,31 @@ CREATE TABLE IF NOT EXISTS bom_items (
     material_id BIGINT UNSIGNED NOT NULL,
     quantity DECIMAL(15,3) NOT NULL,
     CONSTRAINT fk_bom_items_bom FOREIGN KEY (bom_id) REFERENCES boms(id) ON DELETE CASCADE,
-    CONSTRAINT fk_bom_items_material FOREIGN KEY (material_id) REFERENCES materials(id) ON DELETE RESTRICT
+    CONSTRAINT fk_bom_items_material FOREIGN KEY (material_id) REFERENCES materials(id) ON DELETE RESTRICT,
+    UNIQUE KEY uq_bom_material (bom_id, material_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS work_orders (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    product_id BIGINT UNSIGNED NOT NULL,
+    bom_id BIGINT UNSIGNED NOT NULL,
+    quantity DECIMAL(15,3) NOT NULL,
+    status VARCHAR(20) NOT NULL DEFAULT 'RESERVED',
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    completed_at TIMESTAMP NULL DEFAULT NULL,
+    CONSTRAINT fk_wo_product FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE RESTRICT,
+    CONSTRAINT fk_wo_bom FOREIGN KEY (bom_id) REFERENCES boms(id) ON DELETE RESTRICT
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS work_order_items (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    work_order_id BIGINT UNSIGNED NOT NULL,
+    material_id BIGINT UNSIGNED NOT NULL,
+    required_quantity DECIMAL(15,3) NOT NULL,
+    reserved_quantity DECIMAL(15,3) NOT NULL,
+    issued_quantity DECIMAL(15,3) NOT NULL DEFAULT 0.000,
+    CONSTRAINT fk_woi_wo FOREIGN KEY (work_order_id) REFERENCES work_orders(id) ON DELETE CASCADE,
+    CONSTRAINT fk_woi_material FOREIGN KEY (material_id) REFERENCES materials(id) ON DELETE RESTRICT
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Seed Data

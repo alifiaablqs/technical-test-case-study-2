@@ -61,6 +61,58 @@ func (m *mockMaterialRepo) Delete(ctx context.Context, id uint64) error {
 	return nil
 }
 
+type mockProductRepo struct {
+	items map[uint64]*model.Product
+	seq   uint64
+}
+
+func newMockProductRepo() *mockProductRepo {
+	return &mockProductRepo{
+		items: make(map[uint64]*model.Product),
+	}
+}
+
+func (m *mockProductRepo) FindAll(ctx context.Context) ([]*model.Product, error) {
+	list := make([]*model.Product, 0, len(m.items))
+	for _, item := range m.items {
+		list = append(list, item)
+	}
+	return list, nil
+}
+
+func (m *mockProductRepo) FindByID(ctx context.Context, id uint64) (*model.Product, error) {
+	item, ok := m.items[id]
+	if !ok {
+		return nil, repository.ErrNotFound
+	}
+	return item, nil
+}
+
+func (m *mockProductRepo) Create(ctx context.Context, item *model.Product) error {
+	m.seq++
+	item.ID = m.seq
+	item.Version = 1
+	m.items[item.ID] = item
+	return nil
+}
+
+func (m *mockProductRepo) Update(ctx context.Context, item *model.Product) error {
+	if _, ok := m.items[item.ID]; !ok {
+		return repository.ErrNotFound
+	}
+	item.Version++
+	m.items[item.ID] = item
+	return nil
+}
+
+func (m *mockProductRepo) Delete(ctx context.Context, id uint64) error {
+	if _, ok := m.items[id]; !ok {
+		return repository.ErrNotFound
+	}
+	delete(m.items, id)
+	return nil
+}
+
 func floatPtr(v float64) *float64 {
 	return &v
 }
