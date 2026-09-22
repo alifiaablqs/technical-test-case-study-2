@@ -126,9 +126,9 @@ func TestMaterialService_CRUD(t *testing.T) {
 	req := &model.MaterialRequest{
 		SKU:      "RM-001",
 		Name:     "Kain",
-		Unit:     "gram",
-		OnHand:   floatPtr(10000),
-		Reserved: floatPtr(500),
+		Unit:     "meter",
+		OnHand:   floatPtr(1000),
+		Reserved: floatPtr(50),
 	}
 
 	created, err := svc.CreateMaterial(ctx, req)
@@ -138,8 +138,8 @@ func TestMaterialService_CRUD(t *testing.T) {
 	if created.ID != 1 {
 		t.Errorf("expected ID 1, got %d", created.ID)
 	}
-	if created.Available != 9500 {
-		t.Errorf("expected available 9500, got %f", created.Available)
+	if created.Available != 950 {
+		t.Errorf("expected available 950, got %f", created.Available)
 	}
 
 	// GetByID
@@ -155,9 +155,9 @@ func TestMaterialService_CRUD(t *testing.T) {
 	updateReq := &model.MaterialRequest{
 		SKU:      "RM-001-UPD",
 		Name:     "Kain Premium",
-		Unit:     "gram",
-		OnHand:   floatPtr(12000),
-		Reserved: floatPtr(1000),
+		Unit:     "meter",
+		OnHand:   floatPtr(1200),
+		Reserved: floatPtr(100),
 	}
 	updated, err := svc.UpdateMaterial(ctx, 1, updateReq)
 	if err != nil {
@@ -166,8 +166,8 @@ func TestMaterialService_CRUD(t *testing.T) {
 	if updated.Name != "Kain Premium" {
 		t.Errorf("expected updated name 'Kain Premium', got %s", updated.Name)
 	}
-	if updated.Available != 11000 {
-		t.Errorf("expected available 11000, got %f", updated.Available)
+	if updated.Available != 1100 {
+		t.Errorf("expected available 1100, got %f", updated.Available)
 	}
 
 	// Delete

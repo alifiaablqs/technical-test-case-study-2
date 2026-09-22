@@ -318,7 +318,7 @@ func TestWorkOrderEndpoints(t *testing.T) {
 
 	// Seed product and materials
 	_ = prodRepo.Create(ctx, &model.Product{SKU: "FG-001", Name: "Kemeja", Unit: "pcs"})
-	_ = matRepo.Create(ctx, &model.Material{SKU: "RM-001", Name: "Kain", Unit: "gram", OnHand: 10000, Reserved: 0})
+	_ = matRepo.Create(ctx, &model.Material{SKU: "RM-001", Name: "Kain", Unit: "meter", OnHand: 1000, Reserved: 0})
 	_ = matRepo.Create(ctx, &model.Material{SKU: "RM-002", Name: "Benang", Unit: "gram", OnHand: 5000, Reserved: 0})
 	_ = matRepo.Create(ctx, &model.Material{SKU: "RM-003", Name: "Kancing", Unit: "pcs", OnHand: 1000, Reserved: 0})
 
@@ -327,7 +327,7 @@ func TestWorkOrderEndpoints(t *testing.T) {
 		ProductID: 1,
 		Version:   1,
 		Items: []model.CreateBOMItemRequest{
-			{MaterialID: 1, Quantity: 500},
+			{MaterialID: 1, Quantity: 1.5},
 			{MaterialID: 2, Quantity: 50},
 			{MaterialID: 3, Quantity: 5},
 		},
@@ -380,7 +380,7 @@ func TestWorkOrderEndpoints(t *testing.T) {
 	}
 
 	// 5. Insufficient Stock (Expected 409 Conflict)
-	payloadF := map[string]interface{}{"product_id": 1, "quantity": 500}
+	payloadF := map[string]interface{}{"product_id": 1, "quantity": 1000}
 	body, _ = json.Marshal(payloadF)
 	req = httptest.NewRequest("POST", "/api/work-orders", bytes.NewBuffer(body))
 	rec = httptest.NewRecorder()

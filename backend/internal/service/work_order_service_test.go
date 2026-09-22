@@ -124,16 +124,16 @@ func TestWorkOrderService_Scenarios(t *testing.T) {
 
 	// Seed product and materials
 	_ = prodRepo.Create(ctx, &model.Product{SKU: "FG-001", Name: "Kemeja", Unit: "pcs"})
-	_ = matRepo.Create(ctx, &model.Material{SKU: "RM-001", Name: "Kain", Unit: "gram", OnHand: 10000, Reserved: 0})
+	_ = matRepo.Create(ctx, &model.Material{SKU: "RM-001", Name: "Kain", Unit: "meter", OnHand: 1000, Reserved: 0})
 	_ = matRepo.Create(ctx, &model.Material{SKU: "RM-002", Name: "Benang", Unit: "gram", OnHand: 5000, Reserved: 0})
 	_ = matRepo.Create(ctx, &model.Material{SKU: "RM-003", Name: "Kancing", Unit: "pcs", OnHand: 1000, Reserved: 0})
 
-	// Seed active BOM (v1: 500 Kain, 50 Benang, 5 Kancing)
+	// Seed active BOM (v1: 1.5 Kain, 50 Benang, 5 Kancing)
 	_, _ = bomRepo.Create(ctx, &model.CreateBOMRequest{
 		ProductID: 1,
 		Version:   1,
 		Items: []model.CreateBOMItemRequest{
-			{MaterialID: 1, Quantity: 500},
+			{MaterialID: 1, Quantity: 1.5},
 			{MaterialID: 2, Quantity: 50},
 			{MaterialID: 3, Quantity: 5},
 		},
@@ -154,8 +154,8 @@ func TestWorkOrderService_Scenarios(t *testing.T) {
 		t.Errorf("Scenario F expected BOMID 1, got %d", woA.BOMID)
 	}
 
-	// Verify BOM explosion: 500*2 = 1000, 50*2 = 100, 5*2 = 10
-	expectedExplosion := map[uint64]float64{1: 1000, 2: 100, 3: 10}
+	// Verify BOM explosion: 1.5*2 = 3, 50*2 = 100, 5*2 = 10
+	expectedExplosion := map[uint64]float64{1: 3, 2: 100, 3: 10}
 	for _, item := range woA.Items {
 		if expectedExplosion[item.MaterialID] != item.RequiredQuantity {
 			t.Errorf("Scenario B material %d expected required_qty %f, got %f", item.MaterialID, expectedExplosion[item.MaterialID], item.RequiredQuantity)
@@ -164,19 +164,19 @@ func TestWorkOrderService_Scenarios(t *testing.T) {
 
 	// Scenario C: Verify material reserved count increased
 	m1, _ := matRepo.FindByID(ctx, 1)
-	if m1.Reserved != 1000 {
-		t.Errorf("Scenario C material 1 expected reserved 1000, got %f", m1.Reserved)
+	if m1.Reserved != 3 {
+		t.Errorf("Scenario C material 1 expected reserved 3, got %f", m1.Reserved)
 	}
 
 	// Scenario D: Create WO with stock insufficient
-	reqD := &model.CreateWorkOrderRequest{ProductID: 1, Quantity: 500} // Requires 250,000 Kain, on_hand is 10,000
+	reqD := &model.CreateWorkOrderRequest{ProductID: 1, Quantity: 1000} // Requires 1,500 Kain, on_hand is 1,000
 	_, err = svc.CreateWorkOrder(ctx, reqD)
 	if !errors.Is(err, repository.ErrInsufficientStock) {
 		t.Errorf("Scenario D expected ErrInsufficientStock, got %v", err)
 	}
 
 	// Scenario E: Verify all-or-nothing rollback (partial reservation must NOT happen)
-	// Material 1 has enough stock for qty 10 (5000 Kain), but set mock to fail on Material 3
+	// Material 1 has enough stock for qty 10 (15 Kain), but set mock to fail on Material 3
 	woRepo.failOnMat = 3
 	reservedM1Before := m1.Reserved
 	reqE := &model.CreateWorkOrderRequest{ProductID: 1, Quantity: 10}
@@ -199,7 +199,7 @@ func TestWorkOrderService_Scenarios(t *testing.T) {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			_, err := svc.CreateWorkOrder(ctx, &model.CreateWorkOrderRequest{ProductID: 1, Quantity: 5})
+			_, err := svc.CreateWorkOrder(ctx, &model.CreateWorkOrderRequest{ProductID: 1, Quantity: 200})
 			if err != nil {
 				errMu.Lock()
 				concurrentErrors++
@@ -210,8 +210,8 @@ func TestWorkOrderService_Scenarios(t *testing.T) {
 	wg.Wait()
 
 	// Remaining available stock after first WO (qty 2):
-	// Kain: 10000 - 1000 = 9000
-	// 5 concurrent requests of Qty 5 require 5 * 2500 = 12,500 Kain total, which exceeds 9000 available.
+	// Kain: 1000 - 3 = 997
+	// 5 concurrent requests of Qty 200 require 5 * 300 = 1,500 Kain total, which exceeds 997 available.
 	// Therefore, some requests MUST succeed and some MUST fail with stock error without corrupting state.
 	if concurrentErrors == 0 {
 		t.Errorf("Scenario G expected at least some concurrent requests to fail due to stock limit")

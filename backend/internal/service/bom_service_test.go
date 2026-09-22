@@ -108,7 +108,7 @@ func TestBOMService_Scenarios(t *testing.T) {
 
 	// Populate mock product and materials
 	_ = prodRepo.Create(ctx, &model.Product{SKU: "FG-001", Name: "Kemeja", Unit: "pcs"})
-	_ = matRepo.Create(ctx, &model.Material{SKU: "RM-001", Name: "Kain", Unit: "gram"})
+	_ = matRepo.Create(ctx, &model.Material{SKU: "RM-001", Name: "Kain", Unit: "meter"})
 	_ = matRepo.Create(ctx, &model.Material{SKU: "RM-002", Name: "Benang", Unit: "gram"})
 	_ = matRepo.Create(ctx, &model.Material{SKU: "RM-003", Name: "Kancing", Unit: "pcs"})
 
@@ -119,7 +119,7 @@ func TestBOMService_Scenarios(t *testing.T) {
 		ProductID: 1,
 		Version:   1,
 		Items: []model.CreateBOMItemRequest{
-			{MaterialID: 1, Quantity: 500},
+			{MaterialID: 1, Quantity: 1.5},
 			{MaterialID: 2, Quantity: 50},
 			{MaterialID: 3, Quantity: 5},
 		},

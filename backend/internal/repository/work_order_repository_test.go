@@ -40,7 +40,7 @@ func setupTestDB(t *testing.T) *sql.DB {
 	SET FOREIGN_KEY_CHECKS = 1;
 
 	INSERT INTO materials (id, sku, name, unit, on_hand, reserved, version) VALUES
-	(1, 'RM-001', 'Kain', 'gram', 10000.000, 0.000, 1),
+	(1, 'RM-001', 'Kain', 'meter', 1000.000, 0.000, 1),
 	(2, 'RM-002', 'Benang', 'gram', 5000.000, 0.000, 1),
 	(3, 'RM-003', 'Kancing', 'pcs', 1000.000, 0.000, 1);
 
@@ -51,7 +51,7 @@ func setupTestDB(t *testing.T) *sql.DB {
 	(1, 1, 1, TRUE);
 
 	INSERT INTO bom_items (id, bom_id, material_id, quantity) VALUES
-	(1, 1, 1, 500.000),
+	(1, 1, 1, 1.500),
 	(2, 1, 2, 50.000),
 	(3, 1, 3, 5.000);
 	`
@@ -70,11 +70,11 @@ func TestWorkOrderRepository_MySQLIntegration(t *testing.T) {
 	repo := repository.NewWorkOrderRepository(db)
 	ctx := context.Background()
 
-	// Test Case A & B & F: Create WO with Qty 2 -> Expected BOM explosion (1000, 100, 10) and Status RESERVED
+	// Test Case A & B & F: Create WO with Qty 2 -> Expected BOM explosion (3, 100, 10) and Status RESERVED
 	items := []model.WorkOrderItem{
-		{MaterialID: 1, RequiredQuantity: 1000}, // 500 * 2
-		{MaterialID: 2, RequiredQuantity: 100},  // 50 * 2
-		{MaterialID: 3, RequiredQuantity: 10},   // 5 * 2
+		{MaterialID: 1, RequiredQuantity: 3},   // 1.5 * 2
+		{MaterialID: 2, RequiredQuantity: 100}, // 50 * 2
+		{MaterialID: 3, RequiredQuantity: 10},  // 5 * 2
 	}
 
 	wo := &model.WorkOrder{
@@ -106,13 +106,13 @@ func TestWorkOrderRepository_MySQLIntegration(t *testing.T) {
 	_ = db.QueryRow("SELECT reserved FROM materials WHERE id = 2").Scan(&r2)
 	_ = db.QueryRow("SELECT reserved FROM materials WHERE id = 3").Scan(&r3)
 
-	if r1 != 1000 || r2 != 100 || r3 != 10 {
-		t.Errorf("Test C failed: expected reserved quantities (1000, 100, 10), got (%f, %f, %f)", r1, r2, r3)
+	if r1 != 3 || r2 != 100 || r3 != 10 {
+		t.Errorf("Test C failed: expected reserved quantities (3, 100, 10), got (%f, %f, %f)", r1, r2, r3)
 	}
 
-	// Test Case D: Create WO with insufficient stock (Requires 20000 Kain, available is 10000-1000=9000)
+	// Test Case D: Create WO with insufficient stock (Requires 2000 Kain, available is 1000-3=997)
 	insufficientItems := []model.WorkOrderItem{
-		{MaterialID: 1, RequiredQuantity: 20000},
+		{MaterialID: 1, RequiredQuantity: 2000},
 		{MaterialID: 2, RequiredQuantity: 2000},
 		{MaterialID: 3, RequiredQuantity: 200},
 	}
@@ -141,8 +141,8 @@ func TestWorkOrderRepository_MySQLIntegration(t *testing.T) {
 	}
 
 	// Test Case G: Concurrent reservation test
-	// Remaining available stock: Kain = 9000 (10000-1000). Each request tries to reserve 2500 Kain (Qty 5).
-	// Max successful requests: 9000 / 2500 = 3. 2 requests should fail with ErrInsufficientStock.
+	// Remaining available stock: Kain = 997 (1000-3). Each request tries to reserve 250 Kain.
+	// Max successful requests: 997 / 250 = 3. 2 requests should fail with ErrInsufficientStock.
 	var wg sync.WaitGroup
 	var succCount, failCount int
 	var mu sync.Mutex
@@ -152,7 +152,7 @@ func TestWorkOrderRepository_MySQLIntegration(t *testing.T) {
 		go func() {
 			defer wg.Done()
 			reqItems := []model.WorkOrderItem{
-				{MaterialID: 1, RequiredQuantity: 2500},
+				{MaterialID: 1, RequiredQuantity: 250},
 				{MaterialID: 2, RequiredQuantity: 250},
 				{MaterialID: 3, RequiredQuantity: 25},
 			}

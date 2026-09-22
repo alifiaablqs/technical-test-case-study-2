@@ -21,7 +21,7 @@ func TestMaterialValidation(t *testing.T) {
 			req: model.MaterialRequest{
 				SKU:      "RM-001",
 				Name:     "Kain",
-				Unit:     "gram",
+				Unit:     "meter",
 				OnHand:   floatPtr(100),
 				Reserved: floatPtr(10),
 			},
@@ -32,7 +32,7 @@ func TestMaterialValidation(t *testing.T) {
 			req: model.MaterialRequest{
 				SKU:  "",
 				Name: "Kain",
-				Unit: "gram",
+				Unit: "meter",
 			},
 			wantErr: true,
 		},
@@ -41,7 +41,7 @@ func TestMaterialValidation(t *testing.T) {
 			req: model.MaterialRequest{
 				SKU:  "RM-001",
 				Name: "",
-				Unit: "gram",
+				Unit: "meter",
 			},
 			wantErr: true,
 		},
@@ -59,7 +59,7 @@ func TestMaterialValidation(t *testing.T) {
 			req: model.MaterialRequest{
 				SKU:    "RM-001",
 				Name:   "Kain",
-				Unit:   "gram",
+				Unit:   "meter",
 				OnHand: floatPtr(-5),
 			},
 			wantErr: true,
@@ -69,7 +69,7 @@ func TestMaterialValidation(t *testing.T) {
 			req: model.MaterialRequest{
 				SKU:      "RM-001",
 				Name:     "Kain",
-				Unit:     "gram",
+				Unit:     "meter",
 				Reserved: floatPtr(-1),
 			},
 			wantErr: true,

@@ -18,7 +18,7 @@ func TestBOMValidation(t *testing.T) {
 				ProductID: 1,
 				Version:   1,
 				Items: []model.CreateBOMItemRequest{
-					{MaterialID: 1, Quantity: 500},
+					{MaterialID: 1, Quantity: 1.5},
 					{MaterialID: 2, Quantity: 50},
 				},
 			},
@@ -30,7 +30,7 @@ func TestBOMValidation(t *testing.T) {
 				ProductID: 0,
 				Version:   1,
 				Items: []model.CreateBOMItemRequest{
-					{MaterialID: 1, Quantity: 500},
+					{MaterialID: 1, Quantity: 1.5},
 				},
 			},
 			wantErr: true,
@@ -41,7 +41,7 @@ func TestBOMValidation(t *testing.T) {
 				ProductID: 1,
 				Version:   0,
 				Items: []model.CreateBOMItemRequest{
-					{MaterialID: 1, Quantity: 500},
+					{MaterialID: 1, Quantity: 1.5},
 				},
 			},
 			wantErr: true,
@@ -72,7 +72,7 @@ func TestBOMValidation(t *testing.T) {
 				ProductID: 1,
 				Version:   1,
 				Items: []model.CreateBOMItemRequest{
-					{MaterialID: 1, Quantity: 500},
+					{MaterialID: 1, Quantity: 1.5},
 					{MaterialID: 1, Quantity: 200},
 				},
 			},

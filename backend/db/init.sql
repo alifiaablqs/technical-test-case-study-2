@@ -70,7 +70,7 @@ CREATE TABLE IF NOT EXISTS work_order_items (
 -- Seed Data
 
 INSERT INTO materials (id, sku, name, unit, on_hand, reserved) VALUES
-(1, 'RM-001', 'Kain', 'gram', 10000.000, 0.000),
+(1, 'RM-001', 'Kain', 'meter', 1000.000, 0.000),
 (2, 'RM-002', 'Benang', 'gram', 5000.000, 0.000),
 (3, 'RM-003', 'Kancing', 'pcs', 1000.000, 0.000)
 ON DUPLICATE KEY UPDATE 
@@ -93,7 +93,7 @@ INSERT INTO boms (id, product_id, version, is_active) VALUES
 ON DUPLICATE KEY UPDATE is_active = VALUES(is_active);
 
 INSERT INTO bom_items (bom_id, material_id, quantity) VALUES
-(1, 1, 500.000),
+(1, 1, 1.500),
 (1, 2, 50.000),
 (1, 3, 5.000)
 ON DUPLICATE KEY UPDATE quantity = VALUES(quantity);
