@@ -27,11 +27,11 @@ Pastikan sudah terinstall:
 ### 1. Setup Database
 
 Buat database MySQL:
-```sql
+sql
 CREATE DATABASE case_study_2
 CHARACTER SET utf8mb4
 COLLATE utf8mb4_unicode_ci;
-```
+
 
 Kemudian jalankan file `backend/db/init.sql`. File tersebut berisi:
 - Struktur tabel
@@ -41,7 +41,7 @@ Kemudian jalankan file `backend/db/init.sql`. File tersebut berisi:
 - Seed BOM
 
 Contoh menggunakan MySQL CLI:
-```bash
+bash
 mysql -u root -p case_study_2 < backend/db/init.sql
 ```
 *Jika menggunakan phpMyAdmin atau HeidiSQL, buka file `backend/db/init.sql`, pilih database `case_study_2`, lalu jalankan seluruh isinya.*
@@ -59,7 +59,7 @@ Backend menggunakan environment variable berikut:
 | `DB_DSN`      | Connection string MySQL | Connection string database |
 
 Contoh untuk Windows CMD jika MySQL lokal menggunakan user root tanpa password:
-```cmd
+cmd
 set "DB_DSN=root:@tcp(127.0.0.1:3306)/case_study_2?parseTime=true&multiStatements=true"
 ```
 *Jika MySQL menggunakan password, sesuaikan `DB_DSN`. Jangan menyimpan password database pribadi di repository.*
@@ -69,10 +69,10 @@ set "DB_DSN=root:@tcp(127.0.0.1:3306)/case_study_2?parseTime=true&multiStatement
 ### 3. Jalankan Backend
 
 Buka terminal:
-```bash
+bash
 cd backend
 go run ./cmd/server
-```
+
 Backend berjalan di: `http://localhost:8080` (biarkan terminal backend tetap berjalan).
 
 ---
@@ -80,11 +80,11 @@ Backend berjalan di: `http://localhost:8080` (biarkan terminal backend tetap ber
 ### 4. Jalankan Frontend
 
 Buka terminal baru:
-```bash
+bash
 cd frontend
 npm install
 npm run dev
-```
+
 Frontend berjalan di: `http://localhost:5173` (buka alamat tersebut di browser).
 
 ---
@@ -153,7 +153,7 @@ Reviewer dapat mencoba alur utama berikut menggunakan seed data:
 
 Alur utama sistem:
 
-```text
+
 Product
    ↓
 BOM
@@ -171,7 +171,7 @@ Production
 Complete Work Order
    ↓
 Raw Material Stock ↓ & Finished Goods Stock ↑
-```
+
 
 ### BOM Explosion
 Kebutuhan material dihitung dengan rumus:
@@ -187,16 +187,16 @@ Stok material perlu dijaga agar tidak dialokasikan melebihi jumlah yang tersedia
 
 1. **Database Transaction**
    Proses reservation dijalankan dalam satu transaksi:
-   ```text
+   text
    BEGIN → Cek stock → Reserve material → Create Work Order → COMMIT
-   ```
+   
    Jika salah satu langkah gagal: `ROLLBACK`. Dengan cara ini tidak ada material yang ter-reserve sebagian.
 
 2. **Row Locking**
    Material yang sedang diproses dikunci menggunakan:
-   ```sql
+   sql
    SELECT ... FROM materials WHERE id = ? FOR UPDATE;
-   ```
+   
    Dengan cara ini transaksi lain harus menunggu sampai transaksi yang sedang menggunakan data tersebut selesai.
 
 3. **Available Stock**
@@ -257,21 +257,21 @@ Stok material perlu dijaga agar tidak dialokasikan melebihi jumlah yang tersedia
 
 ### Backend
 Jalankan:
-```bash
+bash
 cd backend
 gofmt -w .
 go build ./...
 go test ./...
-```
+
 Test mencakup beberapa bagian seperti: validasi Material, validasi Product, validasi BOM, BOM explosion, Work Order, material reservation, insufficient stock, Complete Work Order, transaction rollback, dan MySQL integration test.
 
 ### Frontend
 Jalankan:
-```bash
+bash
 cd frontend
 npm install
 npm run build
-```
+
 Build frontend berhasil menggunakan Vite.
 
 ---
@@ -344,7 +344,7 @@ Beberapa asumsi yang digunakan pada PoC:
 
 ## Struktur Project
 
-```text
+
 case-study-2/
 ├── backend/
 │   ├── cmd/
@@ -366,7 +366,7 @@ case-study-2/
 │       └── pages/
 │
 └── README.md
-```
+
 
 ---
 
@@ -374,7 +374,7 @@ case-study-2/
 
 Backend menggunakan pola layered architecture:
 
-```text
+text
 React Frontend
       ↓
    REST API
@@ -386,4 +386,3 @@ React Frontend
  Repository   (Menangani query database)
       ↓
  MySQL / InnoDB (Sumber utama data inventory dan transaction)
-```
